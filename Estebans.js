@@ -7,15 +7,17 @@ const defaultPhoto = {
 // ---------- Hardcoded Portfolio Items (No Database Needed) ----------
 const portfolioData = [
   // Quizzes
-  { id: 1, title: 'QUIZ 1', category: 'quiz', images: ['QUIZ-1.jpg', 'QUIZ1-2.jpg'] },
-   
-
+  { 
+    id: 1, 
+    title: 'QUIZ 1', 
+    category: 'quiz', 
+    score: '18/20', 
+    date: 'August 25, 2026', 
+    images: ['QUIZ-1.jpg', 'QUIZ1-2.jpg'] 
+  },
   
   // Exams
-  { id: 3, title: 'EXAM 1', category: 'exam', images: [''] },
-  
-  // Activities
-  { id: 4, title: 'ACTIVITY 1', category: 'activity', images: [''] }
+
 ];
 
 // ---------- Tab Navigation & Dynamic Filtering ----------
@@ -111,30 +113,47 @@ function renderPortfolioItems() {
     const card = document.createElement('div');
     card.className = 'quiz-card';
 
-    let imageHTML = '';
-    item.images.forEach((url, index) => {
-      imageHTML += `
-        <div class="img-wrap" style="position:relative; margin-bottom:8px;">
-          <img src="${url}" alt="Photo ${index + 1}" class="zoomable-img"
-            style="width:100%; height:140px; object-fit:cover; display:block; cursor:pointer;"
-            title="Click to view full image" />
-        </div>`;
-    });
+    let primaryImage = item.images.length > 0 ? item.images[0] : '';
+    let extraCount = item.images.length > 1 ? `+${item.images.length - 1}` : '';
+
+    let imageHTML = `
+      <div class="img-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer;" title="Click to view full image">
+        <img src="${primaryImage}" alt="${item.title}" style="width:100%; height:160px; object-fit:cover; display:block; border-radius: 6px;" />
+        <div class="view-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s ease;">
+          <span style="background:rgba(0,0,0,0.7); color:#fff; padding:6px 12px; font-size:14px; font-weight:bold; border-radius:4px;">VIEW</span>
+        </div>
+        ${extraCount ? `<span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.75); color:#fff; padding:2px 8px; font-size:12px; font-weight:bold; border-radius:4px;">${extraCount}</span>` : ''}
+      </div>
+    `;
+
+    let scoreHTML = item.score ? `<span class="badge" style="background:#e4e4e7; color:#52525b; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px; margin-left:6px;">${item.score}</span>` : '';
+    let dateHTML = item.date ? `<span style="font-size:12px; color:var(--muted);">${item.date}</span>` : '';
 
     card.innerHTML = `
-      <h3>${item.title}</h3>
-      <span class="badge ${item.category}">${item.category.toUpperCase()}</span>
-      <div class="card-images-container" style="display: flex; flex-direction: column; margin-top: 12px; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <h3 style="margin: 0;">${item.title}</h3>
+        ${dateHTML}
+      </div>
+      <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span class="badge ${item.category}">${item.category.toUpperCase()}</span>
+        ${scoreHTML}
+      </div>
+      <div class="card-images-container" style="display: flex; flex-direction: column; margin-bottom: 12px;">
         ${imageHTML}
       </div>
     `;
 
-    // Click individual image to open preview modal
-    const cardImgs = card.querySelectorAll('.zoomable-img');
-    cardImgs.forEach((img, idx) => {
-      img.addEventListener('click', () => {
+    const imgWrap = card.querySelector('.zoomable-img');
+    const overlay = card.querySelector('.view-overlay');
+    if (imgWrap && overlay) {
+      imgWrap.addEventListener('mouseenter', () => overlay.style.opacity = '1');
+      imgWrap.addEventListener('mouseleave', () => overlay.style.opacity = '0');
+    }
+
+    if (imgWrap) {
+      imgWrap.addEventListener('click', () => {
         currentModalImages = item.images;
-        currentModalIndex = idx;
+        currentModalIndex = 0;
 
         const imageModal = document.getElementById('image-modal');
         const modalImg = document.getElementById('modal-img');
@@ -146,7 +165,7 @@ function renderPortfolioItems() {
           }
         }
       });
-    });
+    }
 
     container.appendChild(card);
   });
