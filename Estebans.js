@@ -18,12 +18,7 @@
     
     // Exams
   { 
-  id: 2, 
-      title: 'QUIZ 1', 
-      category: 'exam', 
-      score: '18/20', 
-      date: 'August 25, 2026', 
-      images: ['QUIZ2-2.png'] 
+
 
   },
   //Activities
@@ -86,7 +81,7 @@
     });
   }
 
-  // Initial render for theme avatar photo
+
   applyAvatarForTheme();
 
 
@@ -191,11 +186,11 @@
       const currentStr = String(currentModalIndex + 1);
       const totalStr = String(currentModalImages.length);
       
-      let activeColor = '#22c55e'; // default green for quiz
+      let activeColor = '#22c55e'; // default green  quiz
       if (currentCategory === 'exam') {
         activeColor = '#3b82f6'; // blue for exam
       } else if (currentCategory === 'activity') {
-        activeColor = '#f59e0b'; // orange for activity
+        activeColor = '#f59e0b'; // orange activity
       }
 
       let dotsHTML = '<div style="display: flex; justify-content: center; gap: 8px; margin-top: 6px;">';
@@ -237,7 +232,7 @@
     const imageModalContent = imageModal ? imageModal.querySelector('.modal-content') : null;
 
     if (imageModalContent) {
-      // Wrap modal content container in a parent layout wrapper to position arrows completely outside the picture container
+      
       const modalParent = imageModal.querySelector('.modal-dialog') || imageModal.querySelector('div') || imageModal;
       modalParent.style.cssText = "position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;";
 
@@ -247,18 +242,18 @@
         modalImg.style.cssText = "display: block; max-height: 75vh; max-width: 100%; object-fit: contain; margin: 0 auto;";
       }
 
-      // Add Prev/Next Buttons positioned completely outside the picture
+      
       if (!document.getElementById('modal-prev-btn')) {
         const prevBtn = document.createElement('button');
         prevBtn.id = 'modal-prev-btn';
         prevBtn.innerHTML = '&#10094;';
-        // Moved left position outside of image container bounds
+      
         prevBtn.style.cssText = "position: fixed; left: calc(50% - 240px); top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 18px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1020;";
 
         const nextBtn = document.createElement('button');
         nextBtn.id = 'modal-next-btn';
         nextBtn.innerHTML = '&#10095;';
-        // Moved right position outside of image container bounds
+      
         nextBtn.style.cssText = "position: fixed; right: calc(50% - 240px); top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 18px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1020;";
 
       
