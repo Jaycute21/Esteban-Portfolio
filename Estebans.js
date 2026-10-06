@@ -1,9 +1,9 @@
 // ==========================================
-// Portfolio Script - DCIT 26 Project
-// Author: Jay Hans Esteban (BSCS-3B)
+// Portfolio Script - DCIT 26 Application Dev
+// Student: Jay Hans Esteban (BSCS-3B)
 // ==========================================
 
-// --- CONFIG & GLOBAL DATA ---
+// --- dark mode profile---
 const DEFAULT_AVATAR = {
   light: 'avatar-light.png',
   dark: 'avatar-dark.png'
@@ -43,6 +43,7 @@ const portfolioData = [
     date: 'October 10, 2026', 
     images: ['LONG-QUIZ.png'] 
   },
+
   // Exams
   { 
     id: 1,
@@ -72,7 +73,7 @@ const portfolioData = [
   }
 ];
 
-// --- APP STATE ---
+// --- APP STATE VARIABLES ---
 let currentCategory = 'quiz';
 let currentModalImages = [];
 let currentModalIndex = 0;
@@ -84,20 +85,23 @@ const avatarImg = document.getElementById('avatar-img');
 const tabButtons = document.querySelectorAll('.tab');
 const pageSections = document.querySelectorAll('.page');
 
-// Detect Mobile Device
+// Check if user is accessing on a mobile browser
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 
-// --- NAVIGATION & PAGE ROUTING ---
+// --- PAGE NAVIGATION / TAB SWITCHING ---
 function goTo(pageName) {
-  tabButtons.forEach(tab => {
+  // Update active tab buttons
+  tabButtons.forEach(function(tab) {
     tab.classList.toggle('active', tab.dataset.page === pageName);
   });
 
-  pageSections.forEach(page => {
+  // Show selected page section
+  pageSections.forEach(function(page) {
     page.classList.toggle('active', page.id === 'page-' + pageName);
   });
 
+  // Smooth scroll back to top
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   if (pageName === 'home') {
@@ -108,16 +112,18 @@ function goTo(pageName) {
   }
 }
 
-tabButtons.forEach(tab => {
-  tab.addEventListener('click', () => {
+// Add click events to tabs
+tabButtons.forEach(function(tab) {
+  tab.addEventListener('click', function() {
     goTo(tab.dataset.page);
   });
 });
 
 
-// --- THEME / AVATAR LOGIC ---
+// --- LIGHT / DARK THEME & AVATAR ---
 function applyAvatarForTheme() {
   if (!avatarImg) return;
+  
   const currentTheme = bodyElement.dataset.theme;
   const imageSource = DEFAULT_AVATAR[currentTheme];
 
@@ -136,18 +142,26 @@ function setTheme(theme) {
 }
 
 if (themeToggleBtn) {
-  themeToggleBtn.addEventListener('click', () => {
-    const nextTheme = bodyElement.dataset.theme === 'light' ? 'dark' : 'light';
+  themeToggleBtn.addEventListener('click', function() {
+    const nextTheme = (bodyElement.dataset.theme === 'light') ? 'dark' : 'light';
     setTheme(nextTheme);
   });
 }
 
 
-// --- HOME DASHBOARD STATS ---
+// --- HOME DASHBOARD STAT COUNTERS ---
 function updateHomeStats() {
-  const quizCount = portfolioData.filter(item => item.category?.toLowerCase() === 'quiz').length;
-  const examCount = portfolioData.filter(item => item.category?.toLowerCase() === 'exam').length;
-  const activityCount = portfolioData.filter(item => item.category?.toLowerCase() === 'activity').length;
+  const quizCount = portfolioData.filter(function(item) {
+    return item.category && item.category.toLowerCase() === 'quiz';
+  }).length;
+
+  const examCount = portfolioData.filter(function(item) {
+    return item.category && item.category.toLowerCase() === 'exam';
+  }).length;
+
+  const activityCount = portfolioData.filter(function(item) {
+    return item.category && item.category.toLowerCase() === 'activity';
+  }).length;
 
   const statQuiz = document.getElementById('stat-quiz');
   const statExam = document.getElementById('stat-exam');
@@ -159,7 +173,7 @@ function updateHomeStats() {
 }
 
 
-// --- PORTFOLIO ITEM RENDERER ---
+// --- PORTFOLIO ITEM CARD  ---
 function renderPortfolioItems() {
   let containerId = 'quiz-list';
   if (currentCategory === 'exam') containerId = 'exam-list';
@@ -170,16 +184,17 @@ function renderPortfolioItems() {
 
   container.innerHTML = '';
 
-  const filteredItems = portfolioData.filter(
-    item => item.category && item.category.toLowerCase() === currentCategory.toLowerCase()
-  );
+  // Filter items based on active tab category
+  const filteredItems = portfolioData.filter(function(item) {
+    return item.category && item.category.toLowerCase() === currentCategory.toLowerCase();
+  });
 
   if (filteredItems.length === 0) {
     container.innerHTML = `<p style="margin-top:15px; color:var(--muted);">No ${currentCategory}s found.</p>`;
     return;
   }
 
-  filteredItems.forEach(item => {
+  filteredItems.forEach(function(item) {
     const card = document.createElement('div');
     card.className = 'quiz-card';
 
@@ -190,13 +205,14 @@ function renderPortfolioItems() {
     let previewHTML = '';
     
     if (isPdf) {
-      // Build absolute URL for the PDF file
+      // Get absolute URL path for PDF
       const fullPdfUrl = new URL(primaryFile, window.location.href).href;
       
-      // On mobile, use Google Docs Viewer embedded iframe so mobile browsers display live PDF pages directly
-      const iframeSrc = isMobileDevice 
-        ? `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(fullPdfUrl)}` 
-        : `${primaryFile}#toolbar=0&navpanes=0&scrollbar=0`;
+      // Use Google Docs Viewer wrapper for mobile browsers to display live pages
+      let iframeSrc = `${primaryFile}#toolbar=0&navpanes=0&scrollbar=0`;
+      if (isMobileDevice) {
+        iframeSrc = `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(fullPdfUrl)}`;
+      }
 
       previewHTML = `
         <div class="pdf-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer; height:200px; border-radius:6px; overflow:hidden; background:#fff;" title="Click to view full PDF">
@@ -239,14 +255,15 @@ function renderPortfolioItems() {
       </div>
     `;
 
+    // Hover effect & modal click event
     const previewArea = card.querySelector('.zoomable-img');
     const overlay = card.querySelector('.view-overlay');
 
     if (previewArea && overlay) {
-      previewArea.addEventListener('mouseenter', () => { overlay.style.opacity = '1'; });
-      previewArea.addEventListener('mouseleave', () => { overlay.style.opacity = '0'; });
+      previewArea.addEventListener('mouseenter', function() { overlay.style.opacity = '1'; });
+      previewArea.addEventListener('mouseleave', function() { overlay.style.opacity = '0'; });
 
-      previewArea.addEventListener('click', () => {
+      previewArea.addEventListener('click', function() {
         openModal(item, isPdf, primaryFile);
       });
     }
@@ -256,7 +273,7 @@ function renderPortfolioItems() {
 }
 
 
-// --- MODAL & PREVIEW CONTROLLER ---
+// --- MODAL CONTROLLER & VIEWER ---
 function openModal(item, isPdf, primaryFile) {
   const imageModal = document.getElementById('image-modal');
   const modalImg = document.getElementById('modal-img');
@@ -269,11 +286,13 @@ function openModal(item, isPdf, primaryFile) {
   if (!imageModal) return;
 
   if (isPdf) {
+    // Hide standard image elements when viewing PDF
     if (modalImg) modalImg.style.display = 'none';
     if (prevBtn) prevBtn.style.display = 'none';
     if (nextBtn) nextBtn.style.display = 'none';
     if (counterEl) counterEl.style.display = 'none';
 
+    // iframe element if it doesn't exist yet
     if (!modalIframe) {
       modalIframe = document.createElement('iframe');
       modalIframe.id = 'modal-iframe';
@@ -291,6 +310,7 @@ function openModal(item, isPdf, primaryFile) {
     }
     modalIframe.style.display = 'block';
   } else {
+    // Show image viewer modal
     if (modalIframe) modalIframe.style.display = 'none';
     if (counterEl) counterEl.style.display = 'block';
 
@@ -300,7 +320,8 @@ function openModal(item, isPdf, primaryFile) {
     if (modalImg) {
       modalImg.src = currentModalImages[currentModalIndex] || '';
       modalImg.style.display = 'block';
-      // Restrict max-width and max-height to ensure margins for navigation arrow buttons
+      
+      // Limit dimensions so navigation arrows don't get covered
       modalImg.style.maxHeight = '72vh';
       modalImg.style.maxWidth = '78vw';
     }
@@ -319,9 +340,9 @@ function updateModalCounter() {
   const currentStr = String(currentModalIndex + 1);
   const totalStr = String(currentModalImages.length);
   
-  let activeColor = '#22c55e';
-  if (currentCategory === 'exam') activeColor = '#3b82f6';
-  if (currentCategory === 'activity') activeColor = '#f59e0b';
+  let activeColor = '#22c55e'; // default green
+  if (currentCategory === 'exam') activeColor = '#f91a1a'; // blue
+  if (currentCategory === 'activity') activeColor = '#f59e0b'; // orange
 
   let dotsHTML = '<div style="display: flex; justify-content: center; gap: 8px; margin-top: 6px;">';
   for (let i = 0; i < currentModalImages.length; i++) {
@@ -345,18 +366,20 @@ function updateModalArrowsVisibility() {
 
 
 // --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
   applyAvatarForTheme();
   updateHomeStats();
 
+  // Dashboard card click shortcuts
   const statCardQuiz = document.getElementById('stat-card-quiz');
   const statCardExam = document.getElementById('stat-card-exam');
   const statCardActivity = document.getElementById('stat-card-activity');
 
-  if (statCardQuiz) statCardQuiz.addEventListener('click', () => goTo('quiz'));
-  if (statCardExam) statCardExam.addEventListener('click', () => goTo('exam'));
-  if (statCardActivity) statCardActivity.addEventListener('click', () => goTo('activity'));
+  if (statCardQuiz) statCardQuiz.addEventListener('click', function() { goTo('quiz'); });
+  if (statCardExam) statCardExam.addEventListener('click', function() { goTo('exam'); });
+  if (statCardActivity) statCardActivity.addEventListener('click', function() { goTo('activity'); });
 
+  // Initial tab check
   const activeTab = document.querySelector('.tab.active');
   if (activeTab) {
     const pageName = activeTab.dataset.page;
@@ -366,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Setup modal container elements
   const imageModal = document.getElementById('image-modal');
   const modalImg = document.getElementById('modal-img');
   const closeImageModal = document.getElementById('close-image-modal');
@@ -376,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalParent.style.cssText = "position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;";
     imageModalContent.style.cssText = "position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; max-width: 90vw;";
 
-    // Fixed Responsive Modal Arrow Buttons
+    // Responsive Arrow Navigation Buttons
     if (!document.getElementById('modal-prev-btn')) {
       const prevBtn = document.createElement('button');
       prevBtn.id = 'modal-prev-btn';
@@ -391,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
       imageModal.appendChild(prevBtn);
       imageModal.appendChild(nextBtn);
 
-      prevBtn.addEventListener('click', (e) => {
+      prevBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         if (currentModalIndex > 0) {
           currentModalIndex--;
@@ -401,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      nextBtn.addEventListener('click', (e) => {
+      nextBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         if (currentModalIndex < currentModalImages.length - 1) {
           currentModalIndex++;
@@ -420,13 +444,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Close modal when clicking X button or background
   if (closeImageModal) {
-    closeImageModal.addEventListener('click', () => {
+    closeImageModal.addEventListener('click', function() {
       imageModal.classList.remove('show');
     });
   }
 
-  window.addEventListener('click', (e) => {
+  window.addEventListener('click', function(e) {
     if (e.target === imageModal) {
       imageModal.classList.remove('show');
     }
