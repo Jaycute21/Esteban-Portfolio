@@ -28,7 +28,7 @@ const portfolioData = [
           images: ['QUIZ-2.png'] 
   },
     {
-      id: 2, 
+      id: 3, 
           title: 'QUIZ 3', 
           category: 'quiz', 
           score: '20/20', 
@@ -36,13 +36,14 @@ const portfolioData = [
           images: ['Quiz-3.png'] 
   },
     {
-      id: 2, 
+      id: 4, 
           title: 'LONG QUIZ', 
           category: 'quiz', 
           score: '41/45', 
           date: 'October 10, 2026', 
           images: ['LONG-QUIZ.png'] 
   },
+  
   // Exams
   { 
     id: 1,
@@ -84,15 +85,16 @@ const avatarImg = document.getElementById('avatar-img');
 const tabButtons = document.querySelectorAll('.tab');
 const pageSections = document.querySelectorAll('.page');
 
+// Check if device is mobile
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 
 // --- NAVIGATION & PAGE ROUTING ---
 function goTo(pageName) {
-  // Update active tab buttons
   tabButtons.forEach(tab => {
     tab.classList.toggle('active', tab.dataset.page === pageName);
   });
 
-  // Switch visible page section
   pageSections.forEach(page => {
     page.classList.toggle('active', page.id === 'page-' + pageName);
   });
@@ -107,7 +109,6 @@ function goTo(pageName) {
   }
 }
 
-// Attach event listeners to navigation tabs
 tabButtons.forEach(tab => {
   tab.addEventListener('click', () => {
     goTo(tab.dataset.page);
@@ -118,7 +119,6 @@ tabButtons.forEach(tab => {
 // --- THEME / AVATAR LOGIC ---
 function applyAvatarForTheme() {
   if (!avatarImg) return;
-  
   const currentTheme = bodyElement.dataset.theme;
   const imageSource = DEFAULT_AVATAR[currentTheme];
 
@@ -171,7 +171,6 @@ function renderPortfolioItems() {
 
   container.innerHTML = '';
 
-  // Filter items by current active tab
   const filteredItems = portfolioData.filter(
     item => item.category && item.category.toLowerCase() === currentCategory.toLowerCase()
   );
@@ -189,21 +188,33 @@ function renderPortfolioItems() {
     const extraCount = (item.images && item.images.length > 1) ? `+${item.images.length - 1}` : '';
     const isPdf = primaryFile.toLowerCase().endsWith('.pdf');
 
-    // Build media preview area
     let previewHTML = '';
+    
     if (isPdf) {
-      previewHTML = `
-        <div class="pdf-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer; height:200px; border-radius:6px; overflow:hidden; background:#fff;" title="Click to view full PDF">
-          <iframe 
-            src="${primaryFile}#toolbar=0&navpanes=0&scrollbar=0" 
-            style="width:100%; height:100%; border:none; pointer-events:none;" 
-            scrolling="no">
-          </iframe>
-          <div class="view-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s ease;">
-            <span style="background:rgba(0,0,0,0.75); color:#fff; padding:6px 12px; font-size:14px; font-weight:bold; border-radius:4px;">VIEW PDF</span>
+      if (isMobileDevice) {
+        // Styled Mobile PDF Card Preview (Prevents native browser broken iframe download boxes)
+        previewHTML = `
+          <div class="pdf-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer; height:180px; border-radius:8px; background:linear-gradient(135deg, #1e293b, #0f172a); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; padding:15px; text-align:center;" title="Click to view full PDF">
+            <div style="font-size: 38px; margin-bottom: 6px;">📄</div>
+            <div style="font-size: 13px; font-weight: 600; max-width: 90%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; color: #e2e8f0;">${primaryFile}</div>
+            <span style="margin-top:8px; background:#2563eb; color:#fff; padding:6px 14px; font-size:12px; font-weight:bold; border-radius:20px;">VIEW DOCUMENT</span>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        // Desktop Live Iframe Preview
+        previewHTML = `
+          <div class="pdf-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer; height:200px; border-radius:6px; overflow:hidden; background:#fff;" title="Click to view full PDF">
+            <iframe 
+              src="${primaryFile}#toolbar=0&navpanes=0&scrollbar=0" 
+              style="width:100%; height:100%; border:none; pointer-events:none;" 
+              scrolling="no">
+            </iframe>
+            <div class="view-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s ease;">
+              <span style="background:rgba(0,0,0,0.75); color:#fff; padding:6px 12px; font-size:14px; font-weight:bold; border-radius:4px;">VIEW PDF</span>
+            </div>
+          </div>
+        `;
+      }
     } else {
       previewHTML = `
         <div class="img-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer;" title="Click to view full image">
@@ -233,7 +244,6 @@ function renderPortfolioItems() {
       </div>
     `;
 
-    // Add card hover & modal trigger handlers
     const previewArea = card.querySelector('.zoomable-img');
     const overlay = card.querySelector('.view-overlay');
 
@@ -264,26 +274,26 @@ function openModal(item, isPdf, primaryFile) {
   if (!imageModal) return;
 
   if (isPdf) {
-    // PDF View Mode
+    // Hide standard image elements
     if (modalImg) modalImg.style.display = 'none';
     if (prevBtn) prevBtn.style.display = 'none';
     if (nextBtn) nextBtn.style.display = 'none';
     if (counterEl) counterEl.style.display = 'none';
 
-    // Inject iframe dynamically if not present
     if (!modalIframe) {
       modalIframe = document.createElement('iframe');
       modalIframe.id = 'modal-iframe';
-      modalIframe.style.cssText = "width: 80vw; height: 80vh; border: none; border-radius: 8px; background: #fff;";
+      modalIframe.style.cssText = "width: 92vw; height: 85vh; border: none; border-radius: 8px; background: #fff;";
       if (modalImg && modalImg.parentNode) {
         modalImg.parentNode.appendChild(modalIframe);
       }
     }
     
-    modalIframe.src = primaryFile;
+    // For web compatibility across mobile browsers, load full URL path
+    const fullPdfUrl = new URL(primaryFile, window.location.href).href;
+    modalIframe.src = fullPdfUrl;
     modalIframe.style.display = 'block';
   } else {
-    // Image View Mode
     if (modalIframe) modalIframe.style.display = 'none';
     if (counterEl) counterEl.style.display = 'block';
 
@@ -309,9 +319,9 @@ function updateModalCounter() {
   const currentStr = String(currentModalIndex + 1);
   const totalStr = String(currentModalImages.length);
   
-  let activeColor = '#22c55e'; // quiz green
-  if (currentCategory === 'exam') activeColor = '#ea0404'; // exam blue
-  if (currentCategory === 'activity') activeColor = '#f59e0b'; // activity orange
+  let activeColor = '#22c55e';
+  if (currentCategory === 'exam') activeColor = '#3b82f6';
+  if (currentCategory === 'activity') activeColor = '#f59e0b';
 
   let dotsHTML = '<div style="display: flex; justify-content: center; gap: 8px; margin-top: 6px;">';
   for (let i = 0; i < currentModalImages.length; i++) {
@@ -336,13 +346,9 @@ function updateModalArrowsVisibility() {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-  // Apply initial theme avatar
   applyAvatarForTheme();
-  
-  // Calculate dashboard stats
   updateHomeStats();
 
-  // Home page card shortcuts
   const statCardQuiz = document.getElementById('stat-card-quiz');
   const statCardExam = document.getElementById('stat-card-exam');
   const statCardActivity = document.getElementById('stat-card-activity');
@@ -351,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (statCardExam) statCardExam.addEventListener('click', () => goTo('exam'));
   if (statCardActivity) statCardActivity.addEventListener('click', () => goTo('activity'));
 
-  // Load items if active tab on page load isn't home
   const activeTab = document.querySelector('.tab.active');
   if (activeTab) {
     const pageName = activeTab.dataset.page;
@@ -361,7 +366,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Setup modal container and navigation controls
   const imageModal = document.getElementById('image-modal');
   const modalImg = document.getElementById('modal-img');
   const closeImageModal = document.getElementById('close-image-modal');
@@ -370,26 +374,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (imageModalContent) {
     const modalParent = imageModal.querySelector('.modal-dialog') || imageModal.querySelector('div') || imageModal;
     modalParent.style.cssText = "position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;";
-    imageModalContent.style.cssText = "position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; max-width: fit-content;";
+    imageModalContent.style.cssText = "position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; max-width: 95vw;";
     
     if (modalImg) {
-      modalImg.style.cssText = "display: block; max-height: 75vh; max-width: 100%; object-fit: contain; margin: 0 auto;";
+      modalImg.style.cssText = "display: block; max-height: 80vh; max-width: 100%; object-fit: contain; margin: 0 auto;";
     }
 
-    // Build modal nav buttons if they don't exist yet
+    // Responsive Mobile-Friendly Modal Arrow Buttons
     if (!document.getElementById('modal-prev-btn')) {
       const prevBtn = document.createElement('button');
       prevBtn.id = 'modal-prev-btn';
       prevBtn.innerHTML = '&#10094;';
-      prevBtn.style.cssText = "position: fixed; left: calc(50% - 240px); top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 18px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1020;";
+      // Responsive absolute positioning fixed for mobile & desktop screens
+      prevBtn.style.cssText = "position: absolute; left: 8px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.65); color: white; border: none; font-size: 20px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
 
       const nextBtn = document.createElement('button');
       nextBtn.id = 'modal-next-btn';
       nextBtn.innerHTML = '&#10095;';
-      nextBtn.style.cssText = "position: fixed; right: calc(50% - 240px); top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 18px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1020;";
+      nextBtn.style.cssText = "position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.65); color: white; border: none; font-size: 20px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
 
-      imageModal.appendChild(prevBtn);
-      imageModal.appendChild(nextBtn);
+      imageModalContent.appendChild(prevBtn);
+      imageModalContent.appendChild(nextBtn);
 
       prevBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -412,7 +417,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Build modal counter container if not present
     if (!document.getElementById('modal-counter')) {
       const counterDiv = document.createElement('div');
       counterDiv.id = 'modal-counter';
@@ -421,7 +425,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Close modal listeners
   if (closeImageModal) {
     closeImageModal.addEventListener('click', () => {
       imageModal.classList.remove('show');
