@@ -43,7 +43,6 @@ const portfolioData = [
           date: 'October 10, 2026', 
           images: ['LONG-QUIZ.png'] 
   },
-  
   // Exams
   { 
     id: 1,
@@ -85,7 +84,7 @@ const avatarImg = document.getElementById('avatar-img');
 const tabButtons = document.querySelectorAll('.tab');
 const pageSections = document.querySelectorAll('.page');
 
-// Check if device is mobile
+// Detect Mobile Device
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 
@@ -192,7 +191,7 @@ function renderPortfolioItems() {
     
     if (isPdf) {
       if (isMobileDevice) {
-        // Styled Mobile PDF Card Preview (Prevents native browser broken iframe download boxes)
+        // Styled Mobile Card Preview
         previewHTML = `
           <div class="pdf-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer; height:180px; border-radius:8px; background:linear-gradient(135deg, #1e293b, #0f172a); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; padding:15px; text-align:center;" title="Click to view full PDF">
             <div style="font-size: 38px; margin-bottom: 6px;">📄</div>
@@ -274,7 +273,6 @@ function openModal(item, isPdf, primaryFile) {
   if (!imageModal) return;
 
   if (isPdf) {
-    // Hide standard image elements
     if (modalImg) modalImg.style.display = 'none';
     if (prevBtn) prevBtn.style.display = 'none';
     if (nextBtn) nextBtn.style.display = 'none';
@@ -283,15 +281,19 @@ function openModal(item, isPdf, primaryFile) {
     if (!modalIframe) {
       modalIframe = document.createElement('iframe');
       modalIframe.id = 'modal-iframe';
-      modalIframe.style.cssText = "width: 92vw; height: 85vh; border: none; border-radius: 8px; background: #fff;";
+      modalIframe.style.cssText = "width: 90vw; height: 80vh; border: none; border-radius: 8px; background: #fff;";
       if (modalImg && modalImg.parentNode) {
         modalImg.parentNode.appendChild(modalIframe);
       }
     }
     
-    // For web compatibility across mobile browsers, load full URL path
+    // Fix for Mobile PDF viewer: Use Google Docs Viewer wrapper if on mobile
     const fullPdfUrl = new URL(primaryFile, window.location.href).href;
-    modalIframe.src = fullPdfUrl;
+    if (isMobileDevice) {
+      modalIframe.src = `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(fullPdfUrl)}`;
+    } else {
+      modalIframe.src = fullPdfUrl;
+    }
     modalIframe.style.display = 'block';
   } else {
     if (modalIframe) modalIframe.style.display = 'none';
@@ -303,6 +305,9 @@ function openModal(item, isPdf, primaryFile) {
     if (modalImg) {
       modalImg.src = currentModalImages[currentModalIndex] || '';
       modalImg.style.display = 'block';
+      // Scale down image on mobile to leave margin space for navigation buttons
+      modalImg.style.maxHeight = '70vh';
+      modalImg.style.maxWidth = '85vw';
     }
     
     updateModalCounter();
@@ -374,27 +379,22 @@ document.addEventListener('DOMContentLoaded', () => {
   if (imageModalContent) {
     const modalParent = imageModal.querySelector('.modal-dialog') || imageModal.querySelector('div') || imageModal;
     modalParent.style.cssText = "position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;";
-    imageModalContent.style.cssText = "position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; max-width: 95vw;";
-    
-    if (modalImg) {
-      modalImg.style.cssText = "display: block; max-height: 80vh; max-width: 100%; object-fit: contain; margin: 0 auto;";
-    }
+    imageModalContent.style.cssText = "position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; max-width: 90vw;";
 
-    // Responsive Mobile-Friendly Modal Arrow Buttons
+    // Responsive Modal Arrow Buttons
     if (!document.getElementById('modal-prev-btn')) {
       const prevBtn = document.createElement('button');
       prevBtn.id = 'modal-prev-btn';
       prevBtn.innerHTML = '&#10094;';
-      // Responsive absolute positioning fixed for mobile & desktop screens
-      prevBtn.style.cssText = "position: absolute; left: 8px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.65); color: white; border: none; font-size: 20px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
+      prevBtn.style.cssText = "position: fixed; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.75); color: white; border: none; font-size: 22px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
 
       const nextBtn = document.createElement('button');
       nextBtn.id = 'modal-next-btn';
       nextBtn.innerHTML = '&#10095;';
-      nextBtn.style.cssText = "position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.65); color: white; border: none; font-size: 20px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
+      nextBtn.style.cssText = "position: fixed; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.75); color: white; border: none; font-size: 22px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
 
-      imageModalContent.appendChild(prevBtn);
-      imageModalContent.appendChild(nextBtn);
+      imageModal.appendChild(prevBtn);
+      imageModal.appendChild(nextBtn);
 
       prevBtn.addEventListener('click', (e) => {
         e.stopPropagation();
