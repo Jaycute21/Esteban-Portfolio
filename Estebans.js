@@ -1,5 +1,10 @@
-// ---------- Define Photos for Light/Dark Mode ----------
-const defaultPhoto = {
+// ==========================================
+// Portfolio Script - DCIT 26 Project
+// Author: Jay Hans Esteban (BSCS-3B)
+// ==========================================
+
+// --- CONFIG & GLOBAL DATA ---
+const DEFAULT_AVATAR = {
   light: 'avatar-light.png',
   dark: 'avatar-dark.png'
 };
@@ -14,11 +19,34 @@ const portfolioData = [
     date: 'August 25, 2026', 
     images: ['QUIZ-1.jpg', 'QUIZ1-2.jpg'] 
   },
-  
+  {
+      id: 2, 
+          title: 'QUIZ 2', 
+          category: 'quiz', 
+          score: '20/20', 
+          date: 'October 10, 2026', 
+          images: ['QUIZ-2.png'] 
+  },
+    {
+      id: 2, 
+          title: 'QUIZ 3', 
+          category: 'quiz', 
+          score: '20/20', 
+          date: 'October 10, 2026', 
+          images: ['Quiz-3.png'] 
+  },
+    {
+      id: 2, 
+          title: 'LONG QUIZ', 
+          category: 'quiz', 
+          score: '41/45', 
+          date: 'October 10, 2026', 
+          images: ['LONG-QUIZ.png'] 
+  },
   // Exams
   { 
     id: 1,
-    title: '1ST SEM EXAM',
+    title: 'MID TERM EXAM',
     category: 'exam',
     score: '51/70',
     date: 'October 6, 2026',
@@ -44,38 +72,58 @@ const portfolioData = [
   }
 ];
 
-const tabs = document.querySelectorAll('.tab');
-const pages = document.querySelectorAll('.page');
+// --- APP STATE ---
 let currentCategory = 'quiz';
-
 let currentModalImages = [];
 let currentModalIndex = 0;
 
-function goTo(name) {
-  tabs.forEach(t => t.classList.toggle('active', t.dataset.page === name));
-  pages.forEach(p => p.classList.toggle('active', p.id === 'page-' + name));
+// DOM Elements
+const bodyElement = document.body;
+const themeToggleBtn = document.getElementById('theme-toggle');
+const avatarImg = document.getElementById('avatar-img');
+const tabButtons = document.querySelectorAll('.tab');
+const pageSections = document.querySelectorAll('.page');
+
+
+// --- NAVIGATION & PAGE ROUTING ---
+function goTo(pageName) {
+  // Update active tab buttons
+  tabButtons.forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.page === pageName);
+  });
+
+  // Switch visible page section
+  pageSections.forEach(page => {
+    page.classList.toggle('active', page.id === 'page-' + pageName);
+  });
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  if (name === 'home') {
+  if (pageName === 'home') {
     updateHomeStats();
   } else {
-    currentCategory = name;
+    currentCategory = pageName;
     renderPortfolioItems();
   }
 }
 
-tabs.forEach(t => t.addEventListener('click', () => goTo(t.dataset.page)));
+// Attach event listeners to navigation tabs
+tabButtons.forEach(tab => {
+  tab.addEventListener('click', () => {
+    goTo(tab.dataset.page);
+  });
+});
 
-const body = document.body;
-const themeBtn = document.getElementById('theme-toggle');
-const avatarImg = document.getElementById('avatar-img');
 
+// --- THEME / AVATAR LOGIC ---
 function applyAvatarForTheme() {
   if (!avatarImg) return;
-  const theme = body.dataset.theme;
-  const src = defaultPhoto[theme];
-  if (src) {
-    avatarImg.src = src;
+  
+  const currentTheme = bodyElement.dataset.theme;
+  const imageSource = DEFAULT_AVATAR[currentTheme];
+
+  if (imageSource) {
+    avatarImg.src = imageSource;
     avatarImg.classList.add('show');
   } else {
     avatarImg.classList.remove('show');
@@ -84,39 +132,46 @@ function applyAvatarForTheme() {
 }
 
 function setTheme(theme) {
-  body.dataset.theme = theme;
+  bodyElement.dataset.theme = theme;
   applyAvatarForTheme();
 }
 
-if (themeBtn) {
-  themeBtn.addEventListener('click', () => {
-    setTheme(body.dataset.theme === 'light' ? 'dark' : 'light');
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    const nextTheme = bodyElement.dataset.theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
   });
 }
 
-applyAvatarForTheme();
 
+// --- HOME DASHBOARD STATS ---
 function updateHomeStats() {
-  let quizCount = portfolioData.filter(q => q.category && q.category.toLowerCase() === 'quiz').length;
-  let examCount = portfolioData.filter(q => q.category && q.category.toLowerCase() === 'exam').length;
-  let activityCount = portfolioData.filter(q => q.category && q.category.toLowerCase() === 'activity').length;
+  const quizCount = portfolioData.filter(item => item.category?.toLowerCase() === 'quiz').length;
+  const examCount = portfolioData.filter(item => item.category?.toLowerCase() === 'exam').length;
+  const activityCount = portfolioData.filter(item => item.category?.toLowerCase() === 'activity').length;
 
-  const statQuizEl = document.getElementById('stat-quiz');
-  const statExamEl = document.getElementById('stat-exam');
-  const statActivityEl = document.getElementById('stat-activity');
+  const statQuiz = document.getElementById('stat-quiz');
+  const statExam = document.getElementById('stat-exam');
+  const statActivity = document.getElementById('stat-activity');
 
-  if (statQuizEl) statQuizEl.textContent = quizCount;
-  if (statExamEl) statExamEl.textContent = examCount;
-  if (statActivityEl) statActivityEl.textContent = activityCount;
+  if (statQuiz) statQuiz.textContent = quizCount;
+  if (statExam) statExam.textContent = examCount;
+  if (statActivity) statActivity.textContent = activityCount;
 }
 
-function renderPortfolioItems() {
-  const containerId = currentCategory === 'exam' ? 'exam-list' : currentCategory === 'activity' ? 'activity-list' : 'quiz-list';
-  const container = document.getElementById(containerId);
 
+// --- PORTFOLIO ITEM RENDERER ---
+function renderPortfolioItems() {
+  let containerId = 'quiz-list';
+  if (currentCategory === 'exam') containerId = 'exam-list';
+  if (currentCategory === 'activity') containerId = 'activity-list';
+
+  const container = document.getElementById(containerId);
   if (!container) return;
+
   container.innerHTML = '';
 
+  // Filter items by current active tab
   const filteredItems = portfolioData.filter(
     item => item.category && item.category.toLowerCase() === currentCategory.toLowerCase()
   );
@@ -130,16 +185,13 @@ function renderPortfolioItems() {
     const card = document.createElement('div');
     card.className = 'quiz-card';
 
-    let primaryFile = item.images && item.images.length > 0 ? item.images[0] : '';
-    let extraCount = item.images && item.images.length > 1 ? `+${item.images.length - 1}` : '';
-    
-    // Detect PDF files
+    const primaryFile = (item.images && item.images.length > 0) ? item.images[0] : '';
+    const extraCount = (item.images && item.images.length > 1) ? `+${item.images.length - 1}` : '';
     const isPdf = primaryFile.toLowerCase().endsWith('.pdf');
 
+    // Build media preview area
     let previewHTML = '';
-
     if (isPdf) {
-      // Direct live PDF card preview via IFrame
       previewHTML = `
         <div class="pdf-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer; height:200px; border-radius:6px; overflow:hidden; background:#fff;" title="Click to view full PDF">
           <iframe 
@@ -164,8 +216,8 @@ function renderPortfolioItems() {
       `;
     }
 
-    let scoreHTML = item.score ? `<span class="badge" style="background:#e4e4e7; color:#52525b; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px; margin-left:6px;">${item.score}</span>` : '';
-    let dateHTML = item.date ? `<span style="font-size:12px; color:var(--muted);">${item.date}</span>` : '';
+    const scoreHTML = item.score ? `<span class="badge" style="background:#e4e4e7; color:#52525b; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px; margin-left:6px;">${item.score}</span>` : '';
+    const dateHTML = item.date ? `<span style="font-size:12px; color:var(--muted);">${item.date}</span>` : '';
 
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -181,57 +233,16 @@ function renderPortfolioItems() {
       </div>
     `;
 
+    // Add card hover & modal trigger handlers
     const previewArea = card.querySelector('.zoomable-img');
     const overlay = card.querySelector('.view-overlay');
 
     if (previewArea && overlay) {
-      previewArea.addEventListener('mouseenter', () => overlay.style.opacity = '1');
-      previewArea.addEventListener('mouseleave', () => overlay.style.opacity = '0');
+      previewArea.addEventListener('mouseenter', () => { overlay.style.opacity = '1'; });
+      previewArea.addEventListener('mouseleave', () => { overlay.style.opacity = '0'; });
 
       previewArea.addEventListener('click', () => {
-        const imageModal = document.getElementById('image-modal');
-        const modalImg = document.getElementById('modal-img');
-        let modalIframe = document.getElementById('modal-iframe');
-        const prevBtn = document.getElementById('modal-prev-btn');
-        const nextBtn = document.getElementById('modal-next-btn');
-        const counterEl = document.getElementById('modal-counter');
-
-        if (imageModal) {
-          if (isPdf) {
-            // Hide standard image element, display PDF iframe inside modal
-            if (modalImg) modalImg.style.display = 'none';
-            if (prevBtn) prevBtn.style.display = 'none';
-            if (nextBtn) nextBtn.style.display = 'none';
-            if (counterEl) counterEl.style.display = 'none';
-
-            if (!modalIframe) {
-              modalIframe = document.createElement('iframe');
-              modalIframe.id = 'modal-iframe';
-              modalIframe.style.cssText = "width: 80vw; height: 80vh; border: none; border-radius: 8px; background: #fff;";
-              modalImg.parentNode.appendChild(modalIframe);
-            }
-            
-            modalIframe.src = primaryFile;
-            modalIframe.style.display = 'block';
-          } else {
-            // Hide iframe, display standard image viewer modal
-            if (modalIframe) modalIframe.style.display = 'none';
-            if (counterEl) counterEl.style.display = 'block';
-
-            currentModalImages = item.images || [];
-            currentModalIndex = 0;
-
-            if (modalImg) {
-              modalImg.src = currentModalImages[currentModalIndex] || '';
-              modalImg.style.display = 'block';
-            }
-            
-            updateModalCounter();
-            updateModalArrowsVisibility();
-          }
-
-          imageModal.classList.add('show');
-        }
+        openModal(item, isPdf, primaryFile);
       });
     }
 
@@ -239,43 +250,99 @@ function renderPortfolioItems() {
   });
 }
 
+
+// --- MODAL & PREVIEW CONTROLLER ---
+function openModal(item, isPdf, primaryFile) {
+  const imageModal = document.getElementById('image-modal');
+  const modalImg = document.getElementById('modal-img');
+  let modalIframe = document.getElementById('modal-iframe');
+  
+  const prevBtn = document.getElementById('modal-prev-btn');
+  const nextBtn = document.getElementById('modal-next-btn');
+  const counterEl = document.getElementById('modal-counter');
+
+  if (!imageModal) return;
+
+  if (isPdf) {
+    // PDF View Mode
+    if (modalImg) modalImg.style.display = 'none';
+    if (prevBtn) prevBtn.style.display = 'none';
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (counterEl) counterEl.style.display = 'none';
+
+    // Inject iframe dynamically if not present
+    if (!modalIframe) {
+      modalIframe = document.createElement('iframe');
+      modalIframe.id = 'modal-iframe';
+      modalIframe.style.cssText = "width: 80vw; height: 80vh; border: none; border-radius: 8px; background: #fff;";
+      if (modalImg && modalImg.parentNode) {
+        modalImg.parentNode.appendChild(modalIframe);
+      }
+    }
+    
+    modalIframe.src = primaryFile;
+    modalIframe.style.display = 'block';
+  } else {
+    // Image View Mode
+    if (modalIframe) modalIframe.style.display = 'none';
+    if (counterEl) counterEl.style.display = 'block';
+
+    currentModalImages = item.images || [];
+    currentModalIndex = 0;
+
+    if (modalImg) {
+      modalImg.src = currentModalImages[currentModalIndex] || '';
+      modalImg.style.display = 'block';
+    }
+    
+    updateModalCounter();
+    updateModalArrowsVisibility();
+  }
+
+  imageModal.classList.add('show');
+}
+
 function updateModalCounter() {
   const counterEl = document.getElementById('modal-counter');
-  if (counterEl) {
-    const currentStr = String(currentModalIndex + 1);
-    const totalStr = String(currentModalImages.length);
-    
-    let activeColor = '#22c55e'; // quiz green
-    if (currentCategory === 'exam') {
-      activeColor = '#3b82f6'; // exam blue
-    } else if (currentCategory === 'activity') {
-      activeColor = '#f59e0b'; // activity orange
-    }
+  if (!counterEl) return;
 
-    let dotsHTML = '<div style="display: flex; justify-content: center; gap: 8px; margin-top: 6px;">';
-    for (let i = 0; i < currentModalImages.length; i++) {
-      const dotColor = i === currentModalIndex ? activeColor : '#6b7280';
-      dotsHTML += `<span style="width: 8px; height: 8px; border-radius: 50%; background-color: ${dotColor}; display: inline-block;"></span>`;
-    }
-    dotsHTML += '</div>';
+  const currentStr = String(currentModalIndex + 1);
+  const totalStr = String(currentModalImages.length);
+  
+  let activeColor = '#22c55e'; // quiz green
+  if (currentCategory === 'exam') activeColor = '#ea0404'; // exam blue
+  if (currentCategory === 'activity') activeColor = '#f59e0b'; // activity orange
 
-    counterEl.innerHTML = `<div>${currentStr} / ${totalStr}</div>${dotsHTML}`;
+  let dotsHTML = '<div style="display: flex; justify-content: center; gap: 8px; margin-top: 6px;">';
+  for (let i = 0; i < currentModalImages.length; i++) {
+    const dotColor = (i === currentModalIndex) ? activeColor : '#6b7280';
+    dotsHTML += `<span style="width: 8px; height: 8px; border-radius: 50%; background-color: ${dotColor}; display: inline-block;"></span>`;
   }
+  dotsHTML += '</div>';
+
+  counterEl.innerHTML = `<div>${currentStr} / ${totalStr}</div>${dotsHTML}`;
 }
 
 function updateModalArrowsVisibility() {
   const prevBtn = document.getElementById('modal-prev-btn');
   const nextBtn = document.getElementById('modal-next-btn');
+
   if (prevBtn && nextBtn) {
-    prevBtn.style.display = currentModalIndex > 0 ? 'flex' : 'none';
-    nextBtn.style.display = currentModalIndex < currentModalImages.length - 1 ? 'flex' : 'none';
+    prevBtn.style.display = (currentModalIndex > 0) ? 'flex' : 'none';
+    nextBtn.style.display = (currentModalIndex < currentModalImages.length - 1) ? 'flex' : 'none';
   }
 }
 
+
+// --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
+  // Apply initial theme avatar
+  applyAvatarForTheme();
+  
+  // Calculate dashboard stats
   updateHomeStats();
 
-  // Attach card click handlers for Home dashboard
+  // Home page card shortcuts
   const statCardQuiz = document.getElementById('stat-card-quiz');
   const statCardExam = document.getElementById('stat-card-exam');
   const statCardActivity = document.getElementById('stat-card-activity');
@@ -284,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (statCardExam) statCardExam.addEventListener('click', () => goTo('exam'));
   if (statCardActivity) statCardActivity.addEventListener('click', () => goTo('activity'));
 
+  // Load items if active tab on page load isn't home
   const activeTab = document.querySelector('.tab.active');
   if (activeTab) {
     const pageName = activeTab.dataset.page;
@@ -293,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Setup modal container and navigation controls
   const imageModal = document.getElementById('image-modal');
   const modalImg = document.getElementById('modal-img');
   const closeImageModal = document.getElementById('close-image-modal');
@@ -307,6 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalImg.style.cssText = "display: block; max-height: 75vh; max-width: 100%; object-fit: contain; margin: 0 auto;";
     }
 
+    // Build modal nav buttons if they don't exist yet
     if (!document.getElementById('modal-prev-btn')) {
       const prevBtn = document.createElement('button');
       prevBtn.id = 'modal-prev-btn';
@@ -325,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         if (currentModalIndex > 0) {
           currentModalIndex--;
-          modalImg.src = currentModalImages[currentModalIndex];
+          if (modalImg) modalImg.src = currentModalImages[currentModalIndex];
           updateModalCounter();
           updateModalArrowsVisibility();
         }
@@ -335,13 +405,14 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         if (currentModalIndex < currentModalImages.length - 1) {
           currentModalIndex++;
-          modalImg.src = currentModalImages[currentModalIndex];
+          if (modalImg) modalImg.src = currentModalImages[currentModalIndex];
           updateModalCounter();
           updateModalArrowsVisibility();
         }
       });
     }
 
+    // Build modal counter container if not present
     if (!document.getElementById('modal-counter')) {
       const counterDiv = document.createElement('div');
       counterDiv.id = 'modal-counter';
@@ -350,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Close modal listeners
   if (closeImageModal) {
     closeImageModal.addEventListener('click', () => {
       imageModal.classList.remove('show');
