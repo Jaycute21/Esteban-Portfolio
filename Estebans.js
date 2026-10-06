@@ -20,28 +20,28 @@ const portfolioData = [
     images: ['QUIZ-1.jpg', 'QUIZ1-2.jpg'] 
   },
   {
-      id: 2, 
-          title: 'QUIZ 2', 
-          category: 'quiz', 
-          score: '20/20', 
-          date: 'October 10, 2026', 
-          images: ['QUIZ-2.png'] 
+    id: 2, 
+    title: 'QUIZ 2', 
+    category: 'quiz', 
+    score: '20/20', 
+    date: 'October 10, 2026', 
+    images: ['QUIZ-2.png'] 
   },
-    {
-      id: 3, 
-          title: 'QUIZ 3', 
-          category: 'quiz', 
-          score: '20/20', 
-          date: 'October 10, 2026', 
-          images: ['Quiz-3.png'] 
+  {
+    id: 3, 
+    title: 'QUIZ 3', 
+    category: 'quiz', 
+    score: '20/20', 
+    date: 'October 10, 2026', 
+    images: ['Quiz-3.png'] 
   },
-    {
-      id: 4, 
-          title: 'LONG QUIZ', 
-          category: 'quiz', 
-          score: '41/45', 
-          date: 'October 10, 2026', 
-          images: ['LONG-QUIZ.png'] 
+  {
+    id: 4, 
+    title: 'LONG QUIZ', 
+    category: 'quiz', 
+    score: '41/45', 
+    date: 'October 10, 2026', 
+    images: ['LONG-QUIZ.png'] 
   },
   // Exams
   { 
@@ -190,30 +190,26 @@ function renderPortfolioItems() {
     let previewHTML = '';
     
     if (isPdf) {
-      if (isMobileDevice) {
-        // Styled Mobile Card Preview
-        previewHTML = `
-          <div class="pdf-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer; height:180px; border-radius:8px; background:linear-gradient(135deg, #1e293b, #0f172a); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; padding:15px; text-align:center;" title="Click to view full PDF">
-            <div style="font-size: 38px; margin-bottom: 6px;">📄</div>
-            <div style="font-size: 13px; font-weight: 600; max-width: 90%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; color: #e2e8f0;">${primaryFile}</div>
-            <span style="margin-top:8px; background:#2563eb; color:#fff; padding:6px 14px; font-size:12px; font-weight:bold; border-radius:20px;">VIEW DOCUMENT</span>
+      // Build absolute URL for the PDF file
+      const fullPdfUrl = new URL(primaryFile, window.location.href).href;
+      
+      // On mobile, use Google Docs Viewer embedded iframe so mobile browsers display live PDF pages directly
+      const iframeSrc = isMobileDevice 
+        ? `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(fullPdfUrl)}` 
+        : `${primaryFile}#toolbar=0&navpanes=0&scrollbar=0`;
+
+      previewHTML = `
+        <div class="pdf-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer; height:200px; border-radius:6px; overflow:hidden; background:#fff;" title="Click to view full PDF">
+          <iframe 
+            src="${iframeSrc}" 
+            style="width:100%; height:100%; border:none; pointer-events:none;" 
+            scrolling="no">
+          </iframe>
+          <div class="view-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s ease;">
+            <span style="background:rgba(0,0,0,0.75); color:#fff; padding:6px 12px; font-size:14px; font-weight:bold; border-radius:4px;">VIEW PDF</span>
           </div>
-        `;
-      } else {
-        // Desktop Live Iframe Preview
-        previewHTML = `
-          <div class="pdf-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer; height:200px; border-radius:6px; overflow:hidden; background:#fff;" title="Click to view full PDF">
-            <iframe 
-              src="${primaryFile}#toolbar=0&navpanes=0&scrollbar=0" 
-              style="width:100%; height:100%; border:none; pointer-events:none;" 
-              scrolling="no">
-            </iframe>
-            <div class="view-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s ease;">
-              <span style="background:rgba(0,0,0,0.75); color:#fff; padding:6px 12px; font-size:14px; font-weight:bold; border-radius:4px;">VIEW PDF</span>
-            </div>
-          </div>
-        `;
-      }
+        </div>
+      `;
     } else {
       previewHTML = `
         <div class="img-wrap zoomable-img" style="position:relative; margin-bottom:8px; cursor:pointer;" title="Click to view full image">
@@ -287,7 +283,6 @@ function openModal(item, isPdf, primaryFile) {
       }
     }
     
-    // Fix for Mobile PDF viewer: Use Google Docs Viewer wrapper if on mobile
     const fullPdfUrl = new URL(primaryFile, window.location.href).href;
     if (isMobileDevice) {
       modalIframe.src = `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(fullPdfUrl)}`;
@@ -305,9 +300,9 @@ function openModal(item, isPdf, primaryFile) {
     if (modalImg) {
       modalImg.src = currentModalImages[currentModalIndex] || '';
       modalImg.style.display = 'block';
-      // Scale down image on mobile to leave margin space for navigation buttons
-      modalImg.style.maxHeight = '70vh';
-      modalImg.style.maxWidth = '85vw';
+      // Restrict max-width and max-height to ensure margins for navigation arrow buttons
+      modalImg.style.maxHeight = '72vh';
+      modalImg.style.maxWidth = '78vw';
     }
     
     updateModalCounter();
@@ -381,17 +376,17 @@ document.addEventListener('DOMContentLoaded', () => {
     modalParent.style.cssText = "position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;";
     imageModalContent.style.cssText = "position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; max-width: 90vw;";
 
-    // Responsive Modal Arrow Buttons
+    // Fixed Responsive Modal Arrow Buttons
     if (!document.getElementById('modal-prev-btn')) {
       const prevBtn = document.createElement('button');
       prevBtn.id = 'modal-prev-btn';
       prevBtn.innerHTML = '&#10094;';
-      prevBtn.style.cssText = "position: fixed; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.75); color: white; border: none; font-size: 22px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
+      prevBtn.style.cssText = "position: fixed; left: 12px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.75); color: white; border: none; font-size: 20px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
 
       const nextBtn = document.createElement('button');
       nextBtn.id = 'modal-next-btn';
       nextBtn.innerHTML = '&#10095;';
-      nextBtn.style.cssText = "position: fixed; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.75); color: white; border: none; font-size: 22px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
+      nextBtn.style.cssText = "position: fixed; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.75); color: white; border: none; font-size: 20px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; z-index: 1030;";
 
       imageModal.appendChild(prevBtn);
       imageModal.appendChild(nextBtn);
