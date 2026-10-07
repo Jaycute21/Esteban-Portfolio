@@ -3,7 +3,7 @@
 // Student: Jay Hans Esteban (BSCS-3B)
 // ==========================================
 
-// --- GLOBAL CONFIG & DATA ---
+// --- dark mode---
 const DEFAULT_AVATAR = {
   light: 'avatar-light.png',
   dark: 'avatar-dark.png'
@@ -142,16 +142,14 @@ function applyAvatarForTheme() {
 
 function setTheme(theme) {
   bodyElement.dataset.theme = theme;
-  document.documentElement.setAttribute('data-theme', theme);
   applyAvatarForTheme();
-  
   // Save selected theme preference in browser storage
   localStorage.setItem('portfolio-theme', theme);
 }
 
 if (themeToggleBtn) {
   themeToggleBtn.addEventListener('click', function() {
-    const nextTheme = (bodyElement.dataset.theme === 'dark' || document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+    const nextTheme = (bodyElement.dataset.theme === 'light') ? 'dark' : 'light';
     setTheme(nextTheme);
   });
 }
@@ -181,7 +179,7 @@ function updateHomeStats() {
 }
 
 
-// --- PORTFOLIO ITEM CARD RENDERER ---
+// --- PORTFOLIO ITEM CARD  ---
 function renderPortfolioItems() {
   let containerId = 'quiz-list';
   if (currentCategory === 'exam') containerId = 'exam-list';
@@ -213,10 +211,8 @@ function renderPortfolioItems() {
     let previewHTML = '';
     
     if (isPdf) {
-      // Get absolute URL path for PDF
       const fullPdfUrl = new URL(primaryFile, window.location.href).href;
       
-      // Use Google Docs Viewer wrapper for mobile browsers to display live pages
       let iframeSrc = `${primaryFile}#toolbar=0&navpanes=0&scrollbar=0`;
       if (isMobileDevice) {
         iframeSrc = `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(fullPdfUrl)}`;
@@ -294,13 +290,11 @@ function openModal(item, isPdf, primaryFile) {
   if (!imageModal) return;
 
   if (isPdf) {
-    // Hide standard image elements when viewing PDF
     if (modalImg) modalImg.style.display = 'none';
     if (prevBtn) prevBtn.style.display = 'none';
     if (nextBtn) nextBtn.style.display = 'none';
     if (counterEl) counterEl.style.display = 'none';
 
-    // iframe element if it doesn't exist yet
     if (!modalIframe) {
       modalIframe = document.createElement('iframe');
       modalIframe.id = 'modal-iframe';
@@ -318,7 +312,6 @@ function openModal(item, isPdf, primaryFile) {
     }
     modalIframe.style.display = 'block';
   } else {
-    // Show image viewer modal
     if (modalIframe) modalIframe.style.display = 'none';
     if (counterEl) counterEl.style.display = 'block';
 
@@ -328,8 +321,6 @@ function openModal(item, isPdf, primaryFile) {
     if (modalImg) {
       modalImg.src = currentModalImages[currentModalIndex] || '';
       modalImg.style.display = 'block';
-      
-      // Limit dimensions so navigation arrows don't get covered
       modalImg.style.maxHeight = '72vh';
       modalImg.style.maxWidth = '78vw';
     }
@@ -348,9 +339,9 @@ function updateModalCounter() {
   const currentStr = String(currentModalIndex + 1);
   const totalStr = String(currentModalImages.length);
   
-  let activeColor = '#22c55e'; // default green
-  if (currentCategory === 'exam') activeColor = '#f91a1a'; // red
-  if (currentCategory === 'activity') activeColor = '#f59e0b'; // orange
+  let activeColor = '#22c55e';
+  if (currentCategory === 'exam') activeColor = '#f91a1a';
+  if (currentCategory === 'activity') activeColor = '#f59e0b';
 
   let dotsHTML = '<div style="display: flex; justify-content: center; gap: 8px; margin-top: 6px;">';
   for (let i = 0; i < currentModalImages.length; i++) {
@@ -382,8 +373,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // 2. Restore Active Tab Page from URL Hash or localStorage
   const urlHash = window.location.hash.replace('#', '');
   const savedTab = localStorage.getItem('portfolio-tab') || 'home';
-  const initialPage = urlHash || savedTab;
+  const initialPage = urlHash || savedTab;  
 
+  // Navigate to saved page tab
   goTo(initialPage);
 
   // Dashboard card click shortcuts
@@ -406,7 +398,6 @@ document.addEventListener('DOMContentLoaded', function() {
     modalParent.style.cssText = "position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;";
     imageModalContent.style.cssText = "position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; max-width: 90vw;";
 
-    // Responsive Arrow Navigation Buttons
     if (!document.getElementById('modal-prev-btn')) {
       const prevBtn = document.createElement('button');
       prevBtn.id = 'modal-prev-btn';
