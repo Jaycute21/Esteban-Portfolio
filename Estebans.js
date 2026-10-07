@@ -3,7 +3,7 @@
 // Student: Jay Hans Esteban (BSCS-3B)
 // ==========================================
 
-// --- dark mode profile---
+// --- GLOBAL CONFIG & DATA ---
 const DEFAULT_AVATAR = {
   light: 'avatar-light.png',
   dark: 'avatar-dark.png'
@@ -91,6 +91,10 @@ const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera
 
 // --- PAGE NAVIGATION / TAB SWITCHING ---
 function goTo(pageName) {
+  // Save active tab in URL hash and local storage memory
+  window.location.hash = pageName;
+  localStorage.setItem('portfolio-tab', pageName);
+
   // Update active tab buttons
   tabButtons.forEach(function(tab) {
     tab.classList.toggle('active', tab.dataset.page === pageName);
@@ -138,12 +142,16 @@ function applyAvatarForTheme() {
 
 function setTheme(theme) {
   bodyElement.dataset.theme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
   applyAvatarForTheme();
+  
+  // Save selected theme preference in browser storage
+  localStorage.setItem('portfolio-theme', theme);
 }
 
 if (themeToggleBtn) {
   themeToggleBtn.addEventListener('click', function() {
-    const nextTheme = (bodyElement.dataset.theme === 'light') ? 'dark' : 'light';
+    const nextTheme = (bodyElement.dataset.theme === 'dark' || document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
     setTheme(nextTheme);
   });
 }
@@ -173,7 +181,7 @@ function updateHomeStats() {
 }
 
 
-// --- PORTFOLIO ITEM CARD  ---
+// --- PORTFOLIO ITEM CARD RENDERER ---
 function renderPortfolioItems() {
   let containerId = 'quiz-list';
   if (currentCategory === 'exam') containerId = 'exam-list';
@@ -341,7 +349,7 @@ function updateModalCounter() {
   const totalStr = String(currentModalImages.length);
   
   let activeColor = '#22c55e'; // default green
-  if (currentCategory === 'exam') activeColor = '#f91a1a'; // blue
+  if (currentCategory === 'exam') activeColor = '#f91a1a'; // red
   if (currentCategory === 'activity') activeColor = '#f59e0b'; // orange
 
   let dotsHTML = '<div style="display: flex; justify-content: center; gap: 8px; margin-top: 6px;">';
@@ -367,8 +375,16 @@ function updateModalArrowsVisibility() {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', function() {
-  applyAvatarForTheme();
-  updateHomeStats();
+  // 1. Restore Theme
+  const savedTheme = localStorage.getItem('portfolio-theme') || 'light';
+  setTheme(savedTheme);
+
+  // 2. Restore Active Tab Page from URL Hash or localStorage
+  const urlHash = window.location.hash.replace('#', '');
+  const savedTab = localStorage.getItem('portfolio-tab') || 'home';
+  const initialPage = urlHash || savedTab;
+
+  goTo(initialPage);
 
   // Dashboard card click shortcuts
   const statCardQuiz = document.getElementById('stat-card-quiz');
@@ -378,16 +394,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (statCardQuiz) statCardQuiz.addEventListener('click', function() { goTo('quiz'); });
   if (statCardExam) statCardExam.addEventListener('click', function() { goTo('exam'); });
   if (statCardActivity) statCardActivity.addEventListener('click', function() { goTo('activity'); });
-
-  // Initial tab check
-  const activeTab = document.querySelector('.tab.active');
-  if (activeTab) {
-    const pageName = activeTab.dataset.page;
-    if (pageName !== 'home') {
-      currentCategory = pageName;
-      renderPortfolioItems();
-    }
-  }
 
   // Setup modal container elements
   const imageModal = document.getElementById('image-modal');
