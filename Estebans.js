@@ -43,7 +43,22 @@ const portfolioData = [
     date: 'October 10, 2026', 
     images: ['LONG-QUIZ.png'] 
   },
-
+  {
+    id: 5, 
+    title: 'QUIZ 4', 
+    category: 'quiz', 
+    score: '20/20', 
+    date: 'November 23, 2026', 
+    images: ['QUIZ-4.png'] 
+  },
+  {
+    id: 6, 
+    title: 'QUIZ 5', 
+    category: 'quiz', 
+    score: '20/20', 
+    date: 'November 24, 2026', 
+    images: ['QUIZ-5.png'] 
+  },
   // Exams
   { 
     id: 1,
